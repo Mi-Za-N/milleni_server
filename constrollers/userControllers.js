@@ -48,7 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log(req.body)
     const userExists = await User.findOne({ email });
     if (userExists?.verify === false) {
-        const sendOtp = await sendOtpVia(user.phone);
+        const sendOtp = await sendOtpVia(userExists.phone);
         if (sendOtp) {
             return res.json({ "message": "otp message successfully sending.", token: generateToken(userExists._id) })
         }
