@@ -49,8 +49,11 @@ const registerUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email });
     if (userExists?.verify === false) {
         const sendOtp = await sendOtpVia(userExists.phone);
-        if (sendOtp) {
+        // console.log(sendOtp)
+        if (sendOtp?.sent) {
             return res.json({ "message": "otp message successfully sending.", token: generateToken(userExists._id) })
+        }else{
+            return res.json({ "message": "otp message sending failed!"})
         }
     } if (userExists?.verify === true) {
         throw new Error('User already exists! please login!');
@@ -66,8 +69,10 @@ const registerUser = asyncHandler(async (req, res) => {
     })
     if (user) {
         const sendOtp = await sendOtpVia(user.phone);
-        if (sendOtp) {
+        if (sendOtp?.sent) {
             res.json({ "message": "otp message successfully sending.", token: generateToken(user._id) })
+        }else{
+            return res.json({ "message": "otp message sending failed!"})
         }
     } else {
         res.status(400)
