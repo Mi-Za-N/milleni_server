@@ -24,7 +24,8 @@
 
 };
 
-note: user ke jokhon registration korben tokhon user er ekta token paben oi token ta localstorage e save korben tarpor user ke jokhon verify korben tokhon oi token ta authorization diye diben verify api ke korar sumai evabe diben.
+```
+### note: user ke jokhon registration korben tokhon user er ekta token paben oi token ta localstorage e save korben tarpor user ke jokhon verify korben tokhon oi token ta authorization diye diben verify api ke korar sumai evabe diben.
 
 #### user registration verify otp api url link: http://localhost:5000/users/verify
 
@@ -43,6 +44,7 @@ note: user ke jokhon registration korben tokhon user er ekta token paben oi toke
 .then((data) => console.log(data));
 
 };
+```
 
 #### create register user Api url link: http://localhost:5000/users
 
