@@ -91,9 +91,10 @@ const verifyUser = asyncHandler(async (req, res) => {
             token: generateToken(user._id)
         };
         const verify = await verifyOtp(user.phone,otp);
+        // console.log(verify)
         if(!verify){
             res.json({ "error": "user verification failed!" })
-        }else{
+        }if(verify){
             user.verify = true;
             await user.save();
             res.status(200).json({ "message": "user successfully verified!", user: userBody });
