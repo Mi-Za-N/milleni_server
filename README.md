@@ -2,38 +2,45 @@
 
 ## npm install
 
-#### otp code send api url link: http://localhost:5000/users/send-otp
+#### regitrasion otp send api url link: http://localhost:5000/users
 
-    fetch("http://localhost:5000/users/send-otp", {
+    fetch("http://localhost:5000/users", {
       method: "POST",
       headers: {
         "Content-type": "application/json"
       },
       body: JSON.stringify({
-          "countryCode":"+88", //requerd
-          "number":"01832343212" //requerd
-        })
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data));
+    "code":"+88",
+     "first_name":"Emon",
+      "last_name":"Islam",
+      "phone":"01943177541",
+     "email":"emonislamweb@gmail.com",
+      "password":"12345678"
+
+})
+})
+.then((res) => res.json())
+.then((data) => console.log(data));
 
 };
 
-#### otp code verification api url link: http://localhost:5000/users/verify-otp
+note: user ke jokhon registration korben tokhon user er ekta token paben oi token ta localstorage e save korben tarpor user ke jokhon verify korben tokhon oi token ta authorization diye diben verify api ke korar sumai evabe diben.
 
-    fetch("http://localhost:5000/users/verify-otp", {
+#### user registration verify otp api url link: http://localhost:5000/users/verify
+
+    fetch("http://localhost:5000/users/verify", {
       method: "POST",
       headers: {
-        "Content-type": "application/json"
+        "Content-type": "application/json",
+        "authorization":`Bearer ${token}`,
       },
       body: JSON.stringify({
-          "countryCode":"+88", //requerd
-          "number":"01832343212", //requerd
-          "otp":"323322" //requerd
-         })
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data));
+    "otp":"445599"
+
+})
+})
+.then((res) => res.json())
+.then((data) => console.log(data));
 
 };
 
@@ -184,5 +191,7 @@ fetch(`http://localhost:5000/api/events/delete/:id`,{
 ```
 
 # millenivision-server-side
+
 # milleni_server
+
 # milleni_server

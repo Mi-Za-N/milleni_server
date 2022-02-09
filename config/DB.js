@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const uri =`mongodb+srv://Mizan:12255889@cluster0.sxpc1.mongodb.net/milleniVision?retryWrites=true&w=majority`
+const uri =`mongodb+srv://Mizan:12255889@cluster0.sxpc1.mongodb.net/milleniVision2?retryWrites=true&w=majority`
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kqyom.mongodb.net/millenivisionDatabase?retryWrites=true&w=majority`;
 
 const connectDb = async (req, res) => {

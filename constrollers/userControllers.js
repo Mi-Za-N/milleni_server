@@ -1,65 +1,106 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
+const { verifyOtp } = require('../utils/otp');
+const { sendOtp } = require('../verification/verification');
 
 const UserList = asyncHandler(async (req, res) => {
     const users = await User.find().select('-passwordHash');
-
-    if(!users) {
-        res.status(500).json({success: false})
-    } 
+    if (!users) {
+        res.status(400).json({ success: false })
+    }
     res.send(users);
-}) 
+})
 
 const getUserById = asyncHandler(async (req, res) => {
-const user = await User.findById(req.params.id);
-    if(!user) {
-        res.status(500).json({message: 'The user with the given ID was not found.'})
-    } 
+    const user = await User.findById(req.params.id);
+    if (!user) {
+        res.status(400).json({ message: 'The user with the given ID was not found.' })
+    }
     res.status(200).send(user);
 })
 
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { first_name, last_name, phone, email, password, pic,interest_list } = req.body;
+    let { code, first_name, last_name, phone, email, password, pic, interest_list } = req.body;
+    email = email?.toLowerCase();
+    const emailValided = (email) => {
+        const re = /\S+@\S+\.\S+/;
+        return re.test(email);
+    }
+    if (email) {
+        if (!(emailValided(email))) {
+            return res.status(400).json({ "message": "email invalid! please insert a valid email!" })
+        }
+    }
+    // console.log(password.length)
+    function ValidateUSPhoneNumber(phone) {
+        const regExp = /^(01[6789])(\d{8})$/;
+        const vaidPhone = phone.match(regExp);
+        if (vaidPhone) {
+            return true;
+        }
+        return false;
+    }
+    if (ValidateUSPhoneNumber(phone) === false) {
+        return res.status(400).json({ error: { "phone": "Invalid phone Number!" } })
+    }
     // console.log(req.body)
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            res.status(400)
-            throw new Error('User already exists!');
-        }
-        const user = await User.create({
-            first_name,
-            last_name,
-            phone,
-            email,
-            password,
-            pic,
-            interest_list
-        })
-        if (!phone) {
-            return 'please insert valid phone Number'
-        }
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                phone: user.phone,
-                email: user.email,
-                password: user.password,
-                isAdmin: user.isAdmin,
-                pic: user.pic,
-                interest_list:user.interest_list,
-                token: generateToken(user._id)
-            })
-        } else {
-            res.status(400)
-            throw new Error('Error Occured!')
-        }
+    const userExists = await User.findOne({ email });
+    if (userExists?.verify === false) {
+        res.status(400)
+        sendOtp(code, userExists.phone, res);
+    } if (userExists?.verify === true) {
+        throw new Error('User already exists! please login!');
+    }
+    const user = await User.create({
+        first_name,
+        last_name,
+        phone,
+        email,
+        password,
+        pic,
+        interest_list
+    })
+    if (user) {
+        sendOtp(code, user, res);
+
+    } else {
+        res.status(400)
+        throw new Error('Error Occured!')
+    }
 
 })
-
+const verifyUser = asyncHandler(async (req, res) => {
+    const { otp } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        res.status(400).json({ "error": "bad request! otp verify failed!"})
+    }else{
+        const userBody = {
+            _id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            email: user.email,
+            password: user.password,
+            isAdmin: user.isAdmin,
+            pic: user.pic,
+            verify: user.verify,
+            interest_list: user.interest_list,
+            token: generateToken(user._id)
+        };
+        const verify = await verifyOtp(user.phone,otp);
+        if(!verify){
+            res.json({ "error": "user verification failed!" })
+        }else{
+            user.verify = true;
+            await user.save();
+            res.status(200).json({ "message": "user successfully verified!", user: userBody });
+        }
+    }
+ 
+})
 const loginUser = asyncHandler(async (req, res) => {
     // console.log(req.body)
     const { email, password } = req.body;
@@ -78,7 +119,7 @@ const loginUser = asyncHandler(async (req, res) => {
             password: user.password,
             isAdmin: user.isAdmin,
             pic: user.pic,
-            interest_list:user.interest_list,
+            interest_list: user.interest_list,
             token: generateToken(user._id)
         })
     } else {
@@ -111,4 +152,4 @@ const updateUser = asyncHandler(async (req, res) => {
 
 })
 
-module.exports = {UserList,getUserById, registerUser, loginUser, updateUser };
+module.exports = { UserList, getUserById, registerUser, loginUser, updateUser, verifyUser };
