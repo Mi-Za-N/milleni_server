@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
-const { verifyOtp } = require('../utils/otp');
+const { verifyOtp, sendOtpVia } = require('../utils/otp');
 const { sendOtp } = require('../verification/verification');
 
 const UserList = asyncHandler(async (req, res) => {
@@ -48,8 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log(req.body)
     const userExists = await User.findOne({ email });
     if (userExists?.verify === false) {
-        res.status(400)
-        sendOtp(code, userExists.phone, res);
+            return res.json({"message":"otp message successfully sending.",token:generateToken(userExists._id)}) 
     } if (userExists?.verify === true) {
         throw new Error('User already exists! please login!');
     }
@@ -63,8 +62,10 @@ const registerUser = asyncHandler(async (req, res) => {
         interest_list
     })
     if (user) {
-        sendOtp(code, user, res);
-
+      const sendOtp = await sendOtpVia(user.phone);
+      if(sendOtp){
+         res.json({"message":"otp message successfully sending.",token:generateToken(user._id)}) 
+      }
     } else {
         res.status(400)
         throw new Error('Error Occured!')
