@@ -48,7 +48,10 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log(req.body)
     const userExists = await User.findOne({ email });
     if (userExists?.verify === false) {
-            return res.json({"message":"otp message successfully sending.",token:generateToken(userExists._id)}) 
+        const sendOtp = await sendOtpVia(user.phone);
+        if (sendOtp) {
+            return res.json({ "message": "otp message successfully sending.", token: generateToken(userExists._id) })
+        }
     } if (userExists?.verify === true) {
         throw new Error('User already exists! please login!');
     }
@@ -62,10 +65,10 @@ const registerUser = asyncHandler(async (req, res) => {
         interest_list
     })
     if (user) {
-      const sendOtp = await sendOtpVia(user.phone);
-      if(sendOtp){
-         res.json({"message":"otp message successfully sending.",token:generateToken(user._id)}) 
-      }
+        const sendOtp = await sendOtpVia(user.phone);
+        if (sendOtp) {
+            res.json({ "message": "otp message successfully sending.", token: generateToken(user._id) })
+        }
     } else {
         res.status(400)
         throw new Error('Error Occured!')
@@ -76,8 +79,8 @@ const verifyUser = asyncHandler(async (req, res) => {
     const { otp } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) {
-        res.status(400).json({ "error": "bad request! otp verify failed!"})
-    }else{
+        res.status(400).json({ "error": "bad request! otp verify failed!" })
+    } else {
         const userBody = {
             _id: user._id,
             first_name: user.first_name,
@@ -91,17 +94,17 @@ const verifyUser = asyncHandler(async (req, res) => {
             interest_list: user.interest_list,
             token: generateToken(user._id)
         };
-        const verify = await verifyOtp(user.phone,otp);
+        const verify = await verifyOtp(user.phone, otp);
         // console.log(verify)
-        if(!verify){
+        if (!verify) {
             res.json({ "error": "user verification failed!" })
-        }if(verify){
+        } if (verify) {
             user.verify = true;
             await user.save();
             res.status(200).json({ "message": "user successfully verified!", user: userBody });
         }
     }
- 
+
 })
 const loginUser = asyncHandler(async (req, res) => {
     // console.log(req.body)
